@@ -1,0 +1,9 @@
+version: '1.0'
+
+services:
+  nfc:
+    build: ./spring
+    image: spring-boot-nfc:19
+    container_name: java-nfc-container
+    ports:
+      - "8080:8081"
