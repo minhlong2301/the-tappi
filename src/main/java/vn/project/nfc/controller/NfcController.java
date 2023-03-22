@@ -9,6 +9,7 @@ import vn.project.nfc.service.NfcService;
 
 @RequiredArgsConstructor
 @RestController
+@CrossOrigin(originPatterns = "http://localhost:3000")
 @RequestMapping("/api/nfc")
 public class NfcController {
 
