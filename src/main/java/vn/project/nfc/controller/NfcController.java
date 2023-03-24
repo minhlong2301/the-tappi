@@ -9,7 +9,6 @@ import vn.project.nfc.service.NfcService;
 
 @RequiredArgsConstructor
 @RestController
-@CrossOrigin(originPatterns = "http://localhost:3000")
 @RequestMapping("/api/nfc")
 public class NfcController {
 
@@ -23,5 +22,10 @@ public class NfcController {
     @GetMapping("/get-user")
     public ResponseEntity<GlobalResponse<Object>> getUserFromUUID (@RequestParam(name = "uuid", required = false) String uuid) {
         return ResponseEntity.ok(nfcService.getUserFromUUID(uuid));
+    }
+
+    @GetMapping("/test")
+    public String getUserFromUUID () {
+        return String.valueOf(ResponseEntity.ok(nfcService.testAPI()));
     }
 }

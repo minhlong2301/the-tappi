@@ -56,4 +56,8 @@ public class NfcService {
                     .build();
         }
     }
+
+    public String testAPI() {
+        return "Thành công";
+    }
 }
