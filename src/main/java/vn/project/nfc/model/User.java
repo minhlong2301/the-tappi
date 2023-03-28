@@ -3,7 +3,6 @@ package vn.project.nfc.model;
 import lombok.Data;
 
 import javax.persistence.*;
-import java.util.Date;
 
 @Data
 @Entity
@@ -21,28 +20,20 @@ public class User {
     @Column(name = "UUID")
     private String uuid;
 
+    @Column(name = "PASSWORD")
+    private String passWord;
+
+    @Column(name = "URL")
+    private String url;
+
     @Column(name = "AVATAR")
     private String avatar;
 
-    @Column(name = "FB")
-    private String fb;
+    @Column(name = "NICKNAME")
+    private String nickName;
 
-    @Column(name = "TIKTOK")
-    private String tiktok;
+    @Column(name = "CONTENT")
+    private String content;
 
-    @Column(name = "IG")
-    private String ig;
-
-    @Column(name = "DOMAIN")
-    private String domain;
-
-    @Column(name = "DESCRIPTION")
-    private String description;
-
-    @Column(name = "PAGE")
-    private String page;
-
-    @Column(name = "CREATE_AT")
-    private Date createAt;
 
 }
