@@ -3,7 +3,9 @@ package vn.project.nfc.service;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -12,6 +14,7 @@ import vn.project.nfc.repository.UserRepository;
 import vn.project.nfc.request.UpdateRequest;
 import vn.project.nfc.request.UserRequest;
 import vn.project.nfc.response.GlobalResponse;
+import vn.project.nfc.response.GlobalUserResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Base64;
@@ -32,6 +35,7 @@ public class NfcService {
 
     public GlobalResponse<Object> create(UserRequest userRequest) {
         String email = this.getEmailFromAccessToken();
+        GlobalUserResponse globalUserResponse = new GlobalUserResponse();
         if (StringUtils.hasText(email)) {
             Optional<User> user = userRepository.findByEmail(email);
             if (user.isPresent()) {
@@ -45,10 +49,11 @@ public class NfcService {
                     user.get().setNickName(userRequest.getNickName());
                 }
                 userRepository.save(user.get());
+                BeanUtils.copyProperties(user.get(), globalUserResponse);
                 return GlobalResponse.builder()
                         .status(HttpStatus.OK.value())
                         .message("Thành công")
-                        .data(user.get())
+                        .data(globalUserResponse)
                         .build();
             }
         } else {
@@ -63,6 +68,7 @@ public class NfcService {
 
     public GlobalResponse<Object> update(UpdateRequest updateRequest) {
         String email = this.getEmailFromAccessToken();
+        GlobalUserResponse globalUserResponse = new GlobalUserResponse();
         if (StringUtils.hasText(email)) {
             Optional<User> user = userRepository.findByEmail(email);
             if (user.isPresent()) {
@@ -76,10 +82,11 @@ public class NfcService {
                     user.get().setNickName(updateRequest.getNickName());
                 }
                 userRepository.save(user.get());
+                BeanUtils.copyProperties(user.get(), globalUserResponse);
                 return GlobalResponse.builder()
                         .status(HttpStatus.OK.value())
                         .message("Thành công")
-                        .data(user.get())
+                        .data(globalUserResponse)
                         .build();
             }
         } else {
@@ -94,13 +101,15 @@ public class NfcService {
 
     public GlobalResponse<Object> getUserMyselft() {
         String email = this.getEmailFromAccessToken();
+        GlobalUserResponse globalUserResponse = new GlobalUserResponse();
         if (StringUtils.hasText(email)) {
             Optional<User> user = userRepository.findByEmail(email);
             if (user.isPresent()) {
+                BeanUtils.copyProperties(user.get(), globalUserResponse);
                 return GlobalResponse.builder()
                         .status(HttpStatus.OK.value())
                         .message("Thành công")
-                        .data(user.get())
+                        .data(globalUserResponse)
                         .build();
             }
         } else {

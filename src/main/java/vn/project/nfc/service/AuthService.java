@@ -2,6 +2,7 @@ package vn.project.nfc.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,6 +20,7 @@ import vn.project.nfc.request.LoginRequest;
 import vn.project.nfc.request.RegisterRequest;
 import vn.project.nfc.response.CheckUserResponse;
 import vn.project.nfc.response.GlobalResponse;
+import vn.project.nfc.response.GlobalUserResponse;
 import vn.project.nfc.response.LoginResponse;
 import vn.project.nfc.sercurity.impl.UserDetailsImpl;
 import vn.project.nfc.utils.GenericService;
@@ -48,6 +50,7 @@ public class AuthService {
     @Transactional
     public GlobalResponse<Object> registerAccount(RegisterRequest registerRequest) {
         Optional<User> user = userRepository.findByUuid(registerRequest.getUuid());
+        GlobalUserResponse globalUserResponse = new GlobalUserResponse();
         if (!user.isPresent()) {
             return GlobalResponse.builder()
                     .status(HttpStatus.BAD_REQUEST.value())
@@ -67,10 +70,11 @@ public class AuthService {
         user.get().setTelephone(registerRequest.getTelephone());
         user.get().setPassWord(passwordEncoderAndDecode.encode(registerRequest.getPassWord()));
         userRepository.save(user.get());
+        BeanUtils.copyProperties(user.get(), globalUserResponse);
         return GlobalResponse.builder()
                 .status(HttpStatus.OK.value())
                 .message("Thành công")
-                .data(user)
+                .data(globalUserResponse)
                 .build();
     }
 
@@ -92,11 +96,13 @@ public class AuthService {
 
     public GlobalResponse<Object> checkUser(CheckUserRequest checkUserRequest) {
         Optional<User> user = userRepository.findByUuid(checkUserRequest.getUuid());
+        GlobalUserResponse globalUserResponse = new GlobalUserResponse();
         if (user.isPresent()) {
+            BeanUtils.copyProperties(user.get(), globalUserResponse);
             return GlobalResponse.builder()
                     .status(HttpStatus.OK.value())
                     .message("Thành công")
-                    .data(user.get())
+                    .data(globalUserResponse)
                     .build();
         } else {
             return GlobalResponse.builder()

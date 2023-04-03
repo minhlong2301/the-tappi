@@ -23,7 +23,7 @@ public class NfcApplication {
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		CorsConfiguration config = new CorsConfiguration();
 		config.setAllowCredentials(true);
-		config.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+		config.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://192.168.1.189:3000"));
 		config.setAllowedHeaders(Collections.singletonList("*"));
 		config.setAllowedMethods(Collections.singletonList("*"));
 		source.registerCorsConfiguration("/**", config);
