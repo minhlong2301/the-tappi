@@ -31,11 +31,19 @@ public class NfcService {
     private final HttpServletRequest httpServletRequest;
 
     public GlobalResponse<Object> create(UserRequest userRequest) {
-        String userName = this.getUserFromAccessToken();
-        if (StringUtils.hasText(userName)) {
-            Optional<User> user = userRepository.findByUserName(userName);
+        String email = this.getEmailFromAccessToken();
+        if (StringUtils.hasText(email)) {
+            Optional<User> user = userRepository.findByEmail(email);
             if (user.isPresent()) {
-                user.get().setContent(userRequest.getContent());
+                if (StringUtils.hasText(userRequest.getContent())) {
+                    user.get().setContent(userRequest.getContent());
+                }
+                if (StringUtils.hasText(userRequest.getAvatar())) {
+                    user.get().setAvatar(userRequest.getAvatar());
+                }
+                if (StringUtils.hasText(userRequest.getNickName())) {
+                    user.get().setNickName(userRequest.getNickName());
+                }
                 userRepository.save(user.get());
                 return GlobalResponse.builder()
                         .status(HttpStatus.OK.value())
@@ -54,11 +62,19 @@ public class NfcService {
     }
 
     public GlobalResponse<Object> update(UpdateRequest updateRequest) {
-        String userName = this.getUserFromAccessToken();
-        if (StringUtils.hasText(userName)) {
-            Optional<User> user = userRepository.findByUserName(userName);
+        String email = this.getEmailFromAccessToken();
+        if (StringUtils.hasText(email)) {
+            Optional<User> user = userRepository.findByEmail(email);
             if (user.isPresent()) {
-                user.get().setContent(updateRequest.getContent());
+                if (StringUtils.hasText(updateRequest.getContent())) {
+                    user.get().setContent(updateRequest.getContent());
+                }
+                if (StringUtils.hasText(updateRequest.getAvatar())) {
+                    user.get().setAvatar(updateRequest.getAvatar());
+                }
+                if (StringUtils.hasText(updateRequest.getNickName())) {
+                    user.get().setNickName(updateRequest.getNickName());
+                }
                 userRepository.save(user.get());
                 return GlobalResponse.builder()
                         .status(HttpStatus.OK.value())
@@ -77,9 +93,9 @@ public class NfcService {
     }
 
     public GlobalResponse<Object> getUserMyselft() {
-        String userName = this.getUserFromAccessToken();
-        if (StringUtils.hasText(userName)) {
-            Optional<User> user = userRepository.findByUserName(userName);
+        String email = this.getEmailFromAccessToken();
+        if (StringUtils.hasText(email)) {
+            Optional<User> user = userRepository.findByEmail(email);
             if (user.isPresent()) {
                 return GlobalResponse.builder()
                         .status(HttpStatus.OK.value())
@@ -97,7 +113,7 @@ public class NfcService {
         return null;
     }
 
-    private String getUserFromAccessToken() {
+    private String getEmailFromAccessToken() {
         String authorization = httpServletRequest.getHeader("Authorization");
         if (Objects.nonNull(authorization) && authorization.startsWith("Bearer")) {
             String accessToken = authorization.substring(7);
@@ -108,7 +124,7 @@ public class NfcService {
     }
 
     public String testAPI() {
-        return this.getUserFromAccessToken();
+        return this.getEmailFromAccessToken();
 
     }
 }

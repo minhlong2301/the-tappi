@@ -10,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import vn.project.nfc.jwt.JwtProvider;
 import vn.project.nfc.model.User;
 import vn.project.nfc.repository.UserRepository;
@@ -20,6 +21,7 @@ import vn.project.nfc.response.CheckUserResponse;
 import vn.project.nfc.response.GlobalResponse;
 import vn.project.nfc.response.LoginResponse;
 import vn.project.nfc.sercurity.impl.UserDetailsImpl;
+import vn.project.nfc.utils.GenericService;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -37,31 +39,34 @@ public class AuthService {
 
     private final JwtProvider jwtProvider;
 
+    private final GenericService genericService;
+
     public String generateUUID() {
         return UUID.randomUUID().toString().replace("-", "");
     }
 
     @Transactional
     public GlobalResponse<Object> registerAccount(RegisterRequest registerRequest) {
-        if (!userRepository.findByUuid(registerRequest.getUuid()).isPresent()) {
+        Optional<User> user = userRepository.findByUuid(registerRequest.getUuid());
+        if (!user.isPresent()) {
             return GlobalResponse.builder()
                     .status(HttpStatus.BAD_REQUEST.value())
-                    .message("Vui lòng liên hệ với số điện thoại 0853222490 để được cấp mã thẻ")
+                    .message("Bạn chưa có mã thẻ để đăng kí tài khoản")
                     .data(null)
                     .build();
         }
-        if (!userRepository.findByUserNameAndNickName(registerRequest.getUserName(), registerRequest.getNickName()).isPresent()) {
+        if (userRepository.findByEmailAndNickName(registerRequest.getEmail(), registerRequest.getNickName()).isPresent()) {
             return GlobalResponse.builder()
                     .status(HttpStatus.BAD_REQUEST.value())
                     .message("Tên đăng nhập hoặc biệt danh đã tồn tại")
                     .data(null)
                     .build();
         }
-        User user = new User();
-        user.setNickName(registerRequest.getNickName());
-        user.setUserName(registerRequest.getUserName());
-        user.setPassWord(passwordEncoderAndDecode.encode(registerRequest.getPassWord()));
-        userRepository.save(user);
+        user.get().setNickName(registerRequest.getNickName());
+        user.get().setEmail(registerRequest.getEmail());
+        user.get().setTelephone(registerRequest.getTelephone());
+        user.get().setPassWord(passwordEncoderAndDecode.encode(registerRequest.getPassWord()));
+        userRepository.save(user.get());
         return GlobalResponse.builder()
                 .status(HttpStatus.OK.value())
                 .message("Thành công")
@@ -70,7 +75,7 @@ public class AuthService {
     }
 
     public GlobalResponse<Object> userLogin(LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUserName(), loginRequest.getPassWord()));
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassWord()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         UserDetailsImpl userDetailsImpl = (UserDetailsImpl) authentication.getPrincipal();
 //        Boolean isPasswordMatch = passwordEncoderAndDecode.matches(loginRequest.getPassWord(), userDetailsImpl.getPassword());
@@ -86,17 +91,20 @@ public class AuthService {
     }
 
     public GlobalResponse<Object> checkUser(CheckUserRequest checkUserRequest) {
-        CheckUserResponse checkUserResponse = new CheckUserResponse();
-        if (userRepository.findByUuid(checkUserRequest.getUuid()).isPresent()) {
-            checkUserResponse.setTrangThai(1);
+        Optional<User> user = userRepository.findByUuid(checkUserRequest.getUuid());
+        if (user.isPresent()) {
+            return GlobalResponse.builder()
+                    .status(HttpStatus.OK.value())
+                    .message("Thành công")
+                    .data(user.get())
+                    .build();
         } else {
-            checkUserResponse.setTrangThai(0);
+            return GlobalResponse.builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .message("Chưa tồn tại mã thẻ")
+                    .data(null)
+                    .build();
         }
-        return GlobalResponse.builder()
-                .status(HttpStatus.OK.value())
-                .message("Thành công")
-                .data(checkUserResponse)
-                .build();
     }
 
     public GlobalResponse<Object> getUserByNickName(String nickName) {
@@ -114,6 +122,25 @@ public class AuthService {
                     .data(user.get())
                     .build();
         }
+    }
+
+    public GlobalResponse<Object> getQrCode(String uuid) {
+        Optional<User> user = userRepository.findByUuid(uuid);
+        if (user.isPresent()) {
+            String qrCodeBase64 = genericService.generateQRCode(user.get().getUrl(), 300, 300);
+            if (StringUtils.hasText(qrCodeBase64)) {
+                return GlobalResponse.builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Thành công")
+                        .data(qrCodeBase64)
+                        .build();
+            }
+        }
+        return GlobalResponse.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message("Uuid không tồn tại trên hệ thống")
+                .data(null)
+                .build();
     }
 
 }

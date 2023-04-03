@@ -7,8 +7,8 @@ import javax.validation.constraints.NotBlank;
 @Data
 public class RegisterRequest {
 
-    @NotBlank(message = "Username không được để trống")
-    private String userName;
+    @NotBlank(message = "Email không được để trống")
+    private String email;
 
     @NotBlank(message = "Password không được để trống")
     private String passWord;
@@ -19,4 +19,6 @@ public class RegisterRequest {
     @NotBlank(message = "Uuid không được để trống")
     private String uuid;
 
+    @NotBlank(message = "Telephone không được để trống")
+    private String telephone;
 }

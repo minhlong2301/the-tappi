@@ -54,4 +54,10 @@ public class AuthController {
         return ResponseEntity.ok(authService.getUserByNickName(nickName));
     }
 
+    @GetMapping("/qr-code")
+    public ResponseEntity<GlobalResponse<Object>> getQrCode(@RequestParam(name = "uuid", required = true) String uuid) {
+        return ResponseEntity.ok(authService.getQrCode(uuid));
+    }
+
+
 }

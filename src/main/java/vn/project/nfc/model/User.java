@@ -14,8 +14,8 @@ public class User {
     @Column(name = "ID", nullable = false, unique = true)
     private Long id;
 
-    @Column(name = "USERNAME")
-    private String userName;
+    @Column(name = "EMAIL")
+    private String email;
 
     @Column(name = "UUID")
     private String uuid;
@@ -34,6 +34,12 @@ public class User {
 
     @Column(name = "CONTENT")
     private String content;
+
+    @Column(name = "TELEPHONE")
+    private String telephone;
+
+    @Column(name = "ID_CARD")
+    private String idCard;
 
 
 }

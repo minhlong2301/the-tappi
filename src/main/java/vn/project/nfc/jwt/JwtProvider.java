@@ -35,12 +35,11 @@ public class JwtProvider {
                 .compact();
     }
 
-    public String getUserNameFromJwtToken(String token) {
+    public String getEmailFromJwtToken(String token) {
         String encoding = Base64.getEncoder().encodeToString(jwtSecret.getBytes());
-        String userName = Jwts.parser().setSigningKey(encoding).parseClaimsJws(token).getBody().getSubject();
-        System.out.println(userName);
-        if (Objects.nonNull(userName)) {
-            return userName;
+        String email = Jwts.parser().setSigningKey(encoding).parseClaimsJws(token).getBody().getSubject();
+        if (Objects.nonNull(email)) {
+            return email;
         }
         return "";
     }
@@ -48,7 +47,6 @@ public class JwtProvider {
     public boolean validateJwtToken(String token) {
         try {
             String encoding = Base64.getEncoder().encodeToString(jwtSecret.getBytes());
-            System.out.println("========== " + Jwts.parser().setSigningKey(encoding).parseClaimsJws(token));
             Jwts.parser().setSigningKey(encoding).parseClaimsJws(token);
             return true;
         } catch (ExpiredJwtException e) {

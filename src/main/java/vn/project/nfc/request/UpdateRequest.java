@@ -7,6 +7,9 @@ import javax.validation.constraints.NotBlank;
 @Data
 public class UpdateRequest {
 
-    @NotBlank(message = "Content không được để trống")
     private String content;
+
+    private String avatar;
+
+    private String nickName;
 }
