@@ -58,10 +58,17 @@ public class AuthService {
                     .data(null)
                     .build();
         }
-        if (userRepository.findByEmailOrNickName(registerRequest.getEmail(), registerRequest.getNickName()).isPresent()) {
+        if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
             return GlobalResponse.builder()
                     .status(HttpStatus.BAD_REQUEST.value())
-                    .message("Tên đăng nhập hoặc biệt danh đã tồn tại")
+                    .message("Email đã tồn tại")
+                    .data(null)
+                    .build();
+        }
+        if (userRepository.findByNickName(registerRequest.getNickName()).isPresent()) {
+            return GlobalResponse.builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .message("Nickname đã tồn tại")
                     .data(null)
                     .build();
         }
