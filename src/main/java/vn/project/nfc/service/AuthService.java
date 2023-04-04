@@ -58,7 +58,7 @@ public class AuthService {
                     .data(null)
                     .build();
         }
-        if (userRepository.findByEmailAndNickName(registerRequest.getEmail(), registerRequest.getNickName()).isPresent()) {
+        if (userRepository.findByEmailOrNickName(registerRequest.getEmail(), registerRequest.getNickName()).isPresent()) {
             return GlobalResponse.builder()
                     .status(HttpStatus.BAD_REQUEST.value())
                     .message("Tên đăng nhập hoặc biệt danh đã tồn tại")

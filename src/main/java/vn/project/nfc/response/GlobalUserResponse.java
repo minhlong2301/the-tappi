@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class GlobalUserResponse {
 
+    private String id;
+
     private String avatar;
 
     private String nickName;
