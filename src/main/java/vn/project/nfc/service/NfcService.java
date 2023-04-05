@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -48,6 +47,9 @@ public class NfcService {
                 if (StringUtils.hasText(userRequest.getNickName())) {
                     user.get().setNickName(userRequest.getNickName());
                 }
+                if (StringUtils.hasText(userRequest.getDescription())) {
+                    user.get().setDescription(userRequest.getDescription());
+                }
                 userRepository.save(user.get());
                 BeanUtils.copyProperties(user.get(), globalUserResponse);
                 return GlobalResponse.builder()
@@ -59,7 +61,7 @@ public class NfcService {
         } else {
             return GlobalResponse.builder()
                     .status(HttpStatus.BAD_REQUEST.value())
-                    .message("Username không tồn tại trên hệ thống")
+                    .message("Email không tồn tại trên hệ thống")
                     .data(null)
                     .build();
         }
@@ -81,6 +83,9 @@ public class NfcService {
                 if (StringUtils.hasText(updateRequest.getNickName())) {
                     user.get().setNickName(updateRequest.getNickName());
                 }
+                if (StringUtils.hasText(updateRequest.getDescription())) {
+                    user.get().setDescription(updateRequest.getDescription());
+                }
                 userRepository.save(user.get());
                 BeanUtils.copyProperties(user.get(), globalUserResponse);
                 return GlobalResponse.builder()
@@ -92,7 +97,7 @@ public class NfcService {
         } else {
             return GlobalResponse.builder()
                     .status(HttpStatus.BAD_REQUEST.value())
-                    .message("Username không tồn tại trên hệ thống")
+                    .message("Email không tồn tại trên hệ thống")
                     .data(null)
                     .build();
         }

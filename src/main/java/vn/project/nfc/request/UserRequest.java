@@ -11,4 +11,6 @@ public class UserRequest {
     private String avatar;
 
     private String nickName;
+
+    private String description;
 }

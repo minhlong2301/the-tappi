@@ -23,6 +23,6 @@ public class GlobalUserResponse {
 
     private String typeCard;
 
-
+    private String description;
 
 }

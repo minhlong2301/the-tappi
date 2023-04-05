@@ -18,7 +18,6 @@ import vn.project.nfc.repository.UserRepository;
 import vn.project.nfc.request.CheckUserRequest;
 import vn.project.nfc.request.LoginRequest;
 import vn.project.nfc.request.RegisterRequest;
-import vn.project.nfc.response.CheckUserResponse;
 import vn.project.nfc.response.GlobalResponse;
 import vn.project.nfc.response.GlobalUserResponse;
 import vn.project.nfc.response.LoginResponse;

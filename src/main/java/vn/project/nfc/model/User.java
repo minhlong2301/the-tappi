@@ -41,5 +41,8 @@ public class User {
     @Column(name = "TYPE_CARD")
     private String typeCard;
 
+    @Column(name = "DESCRIPTION")
+    private String description;
+
 
 }
