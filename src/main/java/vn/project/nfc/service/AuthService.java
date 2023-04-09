@@ -155,4 +155,20 @@ public class AuthService {
                 .build();
     }
 
+    public GlobalResponse<Object> generateUuidAndUrl() {
+        String uuid;
+        for (int i = 0; i < 201; i++) {
+            User user = new User();
+            user.setUuid(UUID.randomUUID().toString());
+            uuid = user.getUuid();
+            user.setUrl("http://liamtap.site/" + uuid);
+            userRepository.save(user);
+        }
+        return GlobalResponse.builder()
+                .status(HttpStatus.OK.value())
+                .message("Thành công")
+                .data(null)
+                .build();
+    }
+
 }

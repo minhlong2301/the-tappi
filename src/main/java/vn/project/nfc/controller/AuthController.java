@@ -59,5 +59,10 @@ public class AuthController {
         return ResponseEntity.ok(authService.getQrCode(uuid));
     }
 
+    @GetMapping("/generate-uuid")
+    public ResponseEntity<GlobalResponse<Object>> generateUuidAndUrl() {
+        return ResponseEntity.ok(authService.generateUuidAndUrl());
+    }
+
 
 }
