@@ -38,8 +38,8 @@ public class User {
     @Column(name = "TELEPHONE")
     private String telephone;
 
-    @Column(name = "TYPE_CARD")
-    private String typeCard;
+    @Column(name = "TEMPLATES")
+    private String templates;
 
     @Column(name = "DESCRIPTION")
     private String description;

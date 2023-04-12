@@ -15,4 +15,6 @@ public class UpdateRequest {
     private String nickName;
 
     private String description;
+
+    private String templates;
 }

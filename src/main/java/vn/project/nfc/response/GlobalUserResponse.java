@@ -17,11 +17,7 @@ public class GlobalUserResponse {
 
     private String content;
 
-    private String email;
-
-    private String telephone;
-
-    private String typeCard;
+    private String templates;
 
     private String description;
 

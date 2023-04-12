@@ -121,6 +121,7 @@ public class AuthService {
 
     public GlobalResponse<Object> getUserByNickName(String nickName) {
         Optional<User> user = userRepository.findByNickName(nickName);
+        GlobalUserResponse globalUserResponse = new GlobalUserResponse();
         if (!user.isPresent()) {
             return GlobalResponse.builder()
                     .status(HttpStatus.BAD_REQUEST.value())
@@ -128,10 +129,11 @@ public class AuthService {
                     .data(null)
                     .build();
         } else {
+            BeanUtils.copyProperties(user.get(), globalUserResponse);
             return GlobalResponse.builder()
                     .status(HttpStatus.OK.value())
                     .message("Thành công")
-                    .data(user.get())
+                    .data(globalUserResponse)
                     .build();
         }
     }

@@ -83,6 +83,7 @@ public class NfcService {
                 if (StringUtils.hasText(updateRequest.getNickName())) {
                     user.get().setNickName(updateRequest.getNickName());
                 }
+                user.get().setTemplates(updateRequest.getTemplates());
                 user.get().setDescription(updateRequest.getDescription());
                 userRepository.save(user.get());
                 BeanUtils.copyProperties(user.get(), globalUserResponse);
