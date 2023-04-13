@@ -21,4 +21,6 @@ public class GlobalUserResponse {
 
     private String description;
 
+    private String email;
+
 }
