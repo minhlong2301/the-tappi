@@ -69,45 +69,51 @@ public class NfcService {
     }
 
     public GlobalResponse<Object> update(UpdateRequest updateRequest) {
-        Optional<User> userNickName = userRepository.findByNickName(updateRequest.getNickName());
-        if (!userNickName.isPresent()) {
-            String email = this.getEmailFromAccessToken();
-            GlobalUserResponse globalUserResponse = new GlobalUserResponse();
-            if (StringUtils.hasText(email)) {
-                Optional<User> user = userRepository.findByEmail(email);
-                if (user.isPresent()) {
-                    if (StringUtils.hasText(updateRequest.getContent())) {
-                        user.get().setContent(updateRequest.getContent());
-                    }
-                    if (StringUtils.hasText(updateRequest.getAvatar())) {
-                        user.get().setAvatar(updateRequest.getAvatar());
-                    }
-                    if (StringUtils.hasText(updateRequest.getNickName())) {
+        String email = this.getEmailFromAccessToken();
+        GlobalUserResponse globalUserResponse = new GlobalUserResponse();
+        if (StringUtils.hasText(email)) {
+            Optional<User> user = userRepository.findByEmail(email);
+            if (user.isPresent()) {
+                if (StringUtils.hasText(updateRequest.getContent())) {
+                    user.get().setContent(updateRequest.getContent());
+                }
+                if (StringUtils.hasText(updateRequest.getAvatar())) {
+                    user.get().setAvatar(updateRequest.getAvatar());
+                }
+                if (StringUtils.hasText(updateRequest.getNickName())) {
+                    Optional<User> userNickName = userRepository.findByNickName(updateRequest.getNickName());
+                    if (userNickName.isPresent()) {
+                        if (userNickName.get().getNickName().equals(updateRequest.getNickName())) {
+                            user.get().setNickName(updateRequest.getNickName());
+                        } else {
+                            return GlobalResponse.builder()
+                                    .status(HttpStatus.BAD_REQUEST.value())
+                                    .message("NickName đã tồn tại trên hệ thống")
+                                    .data(null)
+                                    .build();
+                        }
+                    } else {
                         user.get().setNickName(updateRequest.getNickName());
                     }
-                    user.get().setTemplates(updateRequest.getTemplates());
-                    user.get().setDescription(updateRequest.getDescription());
-                    userRepository.save(user.get());
-                    BeanUtils.copyProperties(user.get(), globalUserResponse);
-                    return GlobalResponse.builder()
-                            .status(HttpStatus.OK.value())
-                            .message("Thành công")
-                            .data(globalUserResponse)
-                            .build();
                 }
-            } else {
+                user.get().setDescription(updateRequest.getDescription());
+                user.get().setTemplates(updateRequest.getTemplates());
+                userRepository.save(user.get());
+                BeanUtils.copyProperties(user.get(), globalUserResponse);
                 return GlobalResponse.builder()
-                        .status(HttpStatus.BAD_REQUEST.value())
-                        .message("Email không tồn tại trên hệ thống")
-                        .data(null)
+                        .status(HttpStatus.OK.value())
+                        .message("Thành công")
+                        .data(globalUserResponse)
                         .build();
             }
+        } else {
+            return GlobalResponse.builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .message("Email không tồn tại trên hệ thống")
+                    .data(null)
+                    .build();
         }
-        return GlobalResponse.builder()
-                .status(HttpStatus.BAD_REQUEST.value())
-                .message("NickName dã tồn tại trên hệ thống ")
-                .data(null)
-                .build();
+        return null;
     }
 
     public GlobalResponse<Object> getUserMyselft() {
