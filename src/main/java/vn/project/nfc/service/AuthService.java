@@ -57,6 +57,13 @@ public class AuthService {
                     .data(null)
                     .build();
         }
+        if (StringUtils.hasText(user.get().getEmail())) {
+            return GlobalResponse.builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .message("Thẻ này đã được đăng kí")
+                    .data(null)
+                    .build();
+        }
         if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
             return GlobalResponse.builder()
                     .status(HttpStatus.BAD_REQUEST.value())

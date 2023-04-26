@@ -83,7 +83,7 @@ public class NfcService {
                 if (StringUtils.hasText(updateRequest.getNickName())) {
                     Optional<User> userNickName = userRepository.findByNickName(updateRequest.getNickName());
                     if (userNickName.isPresent()) {
-                        if (userNickName.get().getNickName().equals(updateRequest.getNickName())) {
+                        if (userNickName.get().getEmail().equals(email)) {
                             user.get().setNickName(updateRequest.getNickName());
                         } else {
                             return GlobalResponse.builder()
