@@ -11,6 +11,7 @@ import vn.project.nfc.response.GlobalResponse;
 import vn.project.nfc.service.AuthService;
 import vn.project.nfc.service.ValidateService;
 
+import javax.mail.MessagingException;
 import javax.validation.Valid;
 
 @RequiredArgsConstructor
@@ -24,7 +25,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<GlobalResponse<Object>> registerAccount(@Valid @RequestBody RegisterRequest registerRequest,
-                                                                  BindingResult result) {
+                                                                  BindingResult result) throws MessagingException {
         if (result.hasErrors()) {
             return ResponseEntity.ok(validateService.getErrorValidate(result));
         }

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -24,6 +25,8 @@ import vn.project.nfc.response.LoginResponse;
 import vn.project.nfc.sercurity.impl.UserDetailsImpl;
 import vn.project.nfc.utils.GenericService;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -42,14 +45,15 @@ public class AuthService {
 
     private final GenericService genericService;
 
+    private final JavaMailSender javaMailSender;
+
     public String generateUUID() {
         return UUID.randomUUID().toString().replace("-", "");
     }
 
     @Transactional
-    public GlobalResponse<Object> registerAccount(RegisterRequest registerRequest) {
+    public GlobalResponse<Object> registerAccount(RegisterRequest registerRequest) throws MessagingException {
         Optional<User> user = userRepository.findByUuid(registerRequest.getUuid());
-        GlobalUserResponse globalUserResponse = new GlobalUserResponse();
         if (!user.isPresent()) {
             return GlobalResponse.builder()
                     .status(HttpStatus.BAD_REQUEST.value())
@@ -83,11 +87,31 @@ public class AuthService {
         user.get().setTelephone(registerRequest.getTelephone());
         user.get().setPassWord(passwordEncoderAndDecode.encode(registerRequest.getPassWord()));
         userRepository.save(user.get());
-        BeanUtils.copyProperties(user.get(), globalUserResponse);
+        String content = "<h3>Xin chào " + registerRequest.getNickName() + "</h3>" +
+                "<p>LIAM xin gửi lời cảm ơn chân thành đến " + registerRequest.getNickName() + " vì bạn tin tưởng và lựa chọn sản phẩm của chúng mình. LIAM rất mong rằng thẻ cá nhân mà bạn đã lựa chọn sẽ đem lại cho bạn một trải nghiệm tuyệt vời cùng người thương, gia đình và bạn bè!\n" +
+                "Nếu " + registerRequest.getNickName() + " có bất kỳ thắc mắc hoặc góp ý nào xin đừng ngại ngần liên hệ với LIAM, chúng mình sẽ luôn luôn sẵn sàng hỗ trợ bạn</p>" +
+                "\n" +
+                "<p>Một lần nữa, LIAM xin chân thành cảm ơn bạn vì đã tin tưởng và ủng hộ sản phẩm của chúng mình. Chúc bạn một ngày tốt lành!</p>" +
+                "\n" +
+                "<p> Trân trọng </p>" +
+                "<p>LIAM</p>" +
+                "<p>-------------</p>" +
+                "<p>Thông tin liên hệ</p>" +
+                "<a href=\"https://www.google.com/\">Facebook</a>" +
+                "<a href=\"https://www.google.com/\">Instagram</a>" +
+                "<a href=\"https://www.google.com/\">Tiktok</a>" +
+                "<p>Hotline: 0364688581</p>";
+        String subject = "Cảm ơn bạn đã mua hàng của chúng tôi";
+        MimeMessage message = javaMailSender.createMimeMessage();
+        message.setFrom("info.liamcompany@gmail.com");
+        message.setRecipients(MimeMessage.RecipientType.TO, registerRequest.getEmail());
+        message.setSubject(subject);
+        message.setContent(content, "text/html; charset=utf-8");
+        javaMailSender.send(message);
         return GlobalResponse.builder()
                 .status(HttpStatus.OK.value())
                 .message("Thành công")
-                .data(globalUserResponse)
+                .data(null)
                 .build();
     }
 
