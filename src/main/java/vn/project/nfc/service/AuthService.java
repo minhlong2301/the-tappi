@@ -27,6 +27,7 @@ import vn.project.nfc.utils.GenericService;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -86,6 +87,7 @@ public class AuthService {
         user.get().setEmail(registerRequest.getEmail());
         user.get().setTelephone(registerRequest.getTelephone());
         user.get().setPassWord(passwordEncoderAndDecode.encode(registerRequest.getPassWord()));
+        user.get().setCreateAt(new Date());
         userRepository.save(user.get());
         String content = "<h3>Xin chào " + registerRequest.getNickName() + "</h3>" +
                 "<p>LIAM xin gửi lời cảm ơn chân thành đến " + registerRequest.getNickName() + " vì bạn tin tưởng và lựa chọn sản phẩm của chúng mình. LIAM rất mong rằng thẻ cá nhân mà bạn đã lựa chọn sẽ đem lại cho bạn một trải nghiệm tuyệt vời cùng người thương, gia đình và bạn bè!\n" +
@@ -160,6 +162,8 @@ public class AuthService {
                     .data(null)
                     .build();
         } else {
+            user.get().setUpdateAt(new Date());
+            userRepository.save(user.get());
             BeanUtils.copyProperties(user.get(), globalUserResponse);
             return GlobalResponse.builder()
                     .status(HttpStatus.OK.value())

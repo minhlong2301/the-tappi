@@ -1,8 +1,10 @@
 package vn.project.nfc.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Data
 @Entity
@@ -44,5 +46,14 @@ public class User {
     @Column(name = "DESCRIPTION")
     private String description;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
+    @Column(name = "CREATE_AT")
+    private Date createAt;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
+    @Column(name = "UPDATE_AT")
+    private Date updateAt;
 
 }

@@ -17,6 +17,7 @@ import vn.project.nfc.response.GlobalUserResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Base64;
+import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -98,6 +99,7 @@ public class NfcService {
                 }
                 user.get().setDescription(updateRequest.getDescription());
                 user.get().setTemplates(updateRequest.getTemplates());
+                user.get().setUpdateAt(new Date());
                 userRepository.save(user.get());
                 BeanUtils.copyProperties(user.get(), globalUserResponse);
                 return GlobalResponse.builder()
@@ -122,6 +124,8 @@ public class NfcService {
         if (StringUtils.hasText(email)) {
             Optional<User> user = userRepository.findByEmail(email);
             if (user.isPresent()) {
+                user.get().setUpdateAt(new Date());
+                userRepository.save(user.get());
                 BeanUtils.copyProperties(user.get(), globalUserResponse);
                 return GlobalResponse.builder()
                         .status(HttpStatus.OK.value())
