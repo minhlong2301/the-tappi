@@ -46,6 +46,9 @@ public class User {
     @Column(name = "DESCRIPTION")
     private String description;
 
+    @Column(name = "USER_NAME")
+    private String userName;
+
     @Temporal(TemporalType.TIMESTAMP)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     @Column(name = "CREATE_AT")

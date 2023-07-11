@@ -17,4 +17,6 @@ public class UpdateRequest {
     private String description;
 
     private String templates;
+
+    private String userName;
 }

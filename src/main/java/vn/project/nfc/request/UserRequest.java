@@ -18,4 +18,6 @@ public class UserRequest {
 
     @NotBlank(message = "description không được để trống")
     private String description;
+
+    private String userName;
 }
