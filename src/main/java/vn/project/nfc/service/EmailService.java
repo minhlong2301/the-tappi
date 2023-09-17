@@ -3,6 +3,7 @@ package vn.project.nfc.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.mail.internet.MimeMessage;
@@ -14,6 +15,7 @@ public class EmailService {
 
     private final JavaMailSender javaMailSender;
 
+    @Async
     public void sendEmailRegisterAccount(String nickName, String email) {
         try {
             String content = "<h3>Xin chào " + nickName + "</h3>" +
