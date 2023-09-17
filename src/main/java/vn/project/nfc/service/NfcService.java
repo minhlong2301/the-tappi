@@ -1,5 +1,6 @@
 package vn.project.nfc.service;
 
+import com.google.gson.Gson;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,7 @@ public class NfcService {
     private final HttpServletRequest httpServletRequest;
 
     public GlobalResponse<Object> create(UserRequest userRequest) {
+        log.info("UserRequest =============== " + new Gson().toJson(userRequest));
         String email = this.getEmailFromAccessToken();
         GlobalUserResponse globalUserResponse = new GlobalUserResponse();
         if (StringUtils.hasText(email)) {
@@ -73,6 +75,7 @@ public class NfcService {
     }
 
     public GlobalResponse<Object> update(UpdateRequest updateRequest) {
+        log.info("UpdateRequest ============= " + new Gson().toJson(updateRequest));
         String email = this.getEmailFromAccessToken();
         GlobalUserResponse globalUserResponse = new GlobalUserResponse();
         if (StringUtils.hasText(email)) {

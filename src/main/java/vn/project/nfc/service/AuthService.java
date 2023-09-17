@@ -1,10 +1,21 @@
 package vn.project.nfc.service;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import lombok.var;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -12,6 +23,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Base64Utils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import vn.project.nfc.jwt.JwtProvider;
 import vn.project.nfc.model.User;
@@ -25,11 +38,17 @@ import vn.project.nfc.response.LoginResponse;
 import vn.project.nfc.sercurity.impl.UserDetailsImpl;
 import vn.project.nfc.utils.GenericService;
 
+import javax.imageio.ImageIO;
 import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -46,11 +65,8 @@ public class AuthService {
 
     private final GenericService genericService;
 
-    private final JavaMailSender javaMailSender;
+    private final EmailService emailService;
 
-    public String generateUUID() {
-        return UUID.randomUUID().toString().replace("-", "");
-    }
 
     @Transactional
     public GlobalResponse<Object> registerAccount(RegisterRequest registerRequest) throws MessagingException {
@@ -89,27 +105,7 @@ public class AuthService {
         user.get().setPassWord(passwordEncoderAndDecode.encode(registerRequest.getPassWord()));
         user.get().setCreateAt(new Date());
         userRepository.save(user.get());
-        String content = "<h3>Xin chào " + registerRequest.getNickName() + "</h3>" +
-                "<p>LIAM xin gửi lời cảm ơn chân thành đến " + registerRequest.getNickName() + " vì bạn tin tưởng và lựa chọn sản phẩm của chúng mình. LIAM rất mong rằng thẻ cá nhân mà bạn đã lựa chọn sẽ đem lại cho bạn một trải nghiệm tuyệt vời cùng người thương, gia đình và bạn bè!\n" +
-                "Nếu " + registerRequest.getNickName() + " có bất kỳ thắc mắc hoặc góp ý nào xin đừng ngại ngần liên hệ với LIAM, chúng mình sẽ luôn luôn sẵn sàng hỗ trợ bạn</p>" +
-                "\n" +
-                "<p>Một lần nữa, LIAM xin chân thành cảm ơn bạn vì đã tin tưởng và ủng hộ sản phẩm của chúng mình. Chúc bạn một ngày tốt lành!</p>" +
-                "\n" +
-                "<p> Trân trọng </p>" +
-                "<p>LIAM</p>" +
-                "<p>-------------</p>" +
-                "<p>Thông tin liên hệ</p>" +
-                "<a href=\"https://www.google.com/\">Facebook</a>" +
-                "<a href=\"https://www.google.com/\">Instagram</a>" +
-                "<a href=\"https://www.google.com/\">Tiktok</a>" +
-                "<p>Hotline: 0364688581</p>";
-        String subject = "Cảm ơn bạn đã mua hàng của chúng tôi";
-        MimeMessage message = javaMailSender.createMimeMessage();
-        message.setFrom("info.liamcompany@gmail.com");
-        message.setRecipients(MimeMessage.RecipientType.TO, registerRequest.getEmail());
-        message.setSubject(subject);
-        message.setContent(content, "text/html; charset=utf-8");
-        javaMailSender.send(message);
+        emailService.sendEmailRegisterAccount(registerRequest.getNickName(), registerRequest.getEmail());
         return GlobalResponse.builder()
                 .status(HttpStatus.OK.value())
                 .message("Thành công")
@@ -192,13 +188,13 @@ public class AuthService {
                 .build();
     }
 
-    public GlobalResponse<Object> generateUuidAndUrl() {
+    public GlobalResponse<Object> generateUuidAndUrl(Integer number) {
         String uuid;
-        for (int i = 0; i < 201; i++) {
+        for (int i = 0; i < number; i++) {
             User user = new User();
             user.setUuid(UUID.randomUUID().toString());
             uuid = user.getUuid();
-            user.setUrl("http://liamtap.site/" + uuid);
+            user.setUrl("https://liamtap.site/" + uuid);
             userRepository.save(user);
         }
         return GlobalResponse.builder()
@@ -206,6 +202,109 @@ public class AuthService {
                 .message("Thành công")
                 .data(null)
                 .build();
+    }
+
+    public byte[] generateQRCode() throws IOException, WriterException {
+        ByteArrayOutputStream zipOutputStream = new ByteArrayOutputStream();
+        ZipOutputStream zip = new ZipOutputStream(zipOutputStream);
+        int width = 42;
+        int height = 42;
+        Map<String, String> userList = this.getDataUrls();
+        Map<String, String> uuidAndUrl = new HashMap<>();
+        for (var url : userList.entrySet()) {
+            EnumMap<EncodeHintType, Object> hints = new EnumMap<>(EncodeHintType.class);
+            hints.put(EncodeHintType.CHARACTER_SET, StandardCharsets.UTF_8);
+            BitMatrix bitMatrix = new MultiFormatWriter().encode(url.getValue(), BarcodeFormat.QR_CODE, width, height, hints);
+            BufferedImage qrImage = toBufferedImage(bitMatrix);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ImageIO.write(qrImage, "PNG", outputStream);
+            byte[] pngData = outputStream.toByteArray();
+            String base64QR = Base64.getEncoder().encodeToString(pngData);
+            uuidAndUrl.put(url.getKey(), base64QR);
+        }
+        for (var item : uuidAndUrl.entrySet()) {
+            byte[] decodedDataPDF = Base64Utils.decodeFromString(item.getValue());
+            ZipEntry pdfEntry = new ZipEntry(item.getKey() + ".png");
+            zip.putNextEntry(pdfEntry);
+            zip.write(decodedDataPDF);
+            zip.closeEntry();
+        }
+        zip.close();
+        zipOutputStream.close();
+        return zipOutputStream.toByteArray();
+    }
+
+    private Map<String, String> getDataUrls() {
+        Map<String, String> uuidList = new HashMap<>();
+        List<User> userList = userRepository.findByEmailIsNull();
+        if (!CollectionUtils.isEmpty(userList)) {
+            for (User item : userList) {
+                uuidList.put(item.getUuid(), item.getUrl());
+            }
+        }
+        return uuidList;
+    }
+
+    private static BufferedImage toBufferedImage(BitMatrix matrix) {
+        int width = matrix.getWidth();
+        int height = matrix.getHeight();
+        int customColorRGB = new Color(0, 0, 0).getRGB();
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                image.setRGB(x, y, matrix.get(x, y) ? customColorRGB : Color.TRANSLUCENT);
+            }
+        }
+        return image;
+    }
+
+    private void createCell(Row row, int columnCount, Object valueOfCell, CellStyle style, XSSFSheet sheet) {
+        sheet.autoSizeColumn(columnCount);
+        Cell cell = row.createCell(columnCount);
+        if (valueOfCell instanceof Integer) {
+            cell.setCellValue((Integer) valueOfCell);
+        } else if (valueOfCell instanceof Long) {
+            cell.setCellValue((Long) valueOfCell);
+        } else if (valueOfCell instanceof String) {
+            cell.setCellValue((String) valueOfCell);
+        } else if (valueOfCell instanceof Double) {
+            cell.setCellValue((Double) valueOfCell);
+        }
+        cell.setCellStyle(style);
+    }
+
+    public byte[] exportExcel() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet("URL thẻ cá nhân");
+        Row rowHeader = sheet.createRow(0);
+        CellStyle styleHeader = workbook.createCellStyle();
+        XSSFFont fontHeader = workbook.createFont();
+        fontHeader.setBold(true);
+        fontHeader.setFontHeight(13);
+        fontHeader.setFontName("Times New Roman");
+        styleHeader.setFont(fontHeader);
+        createCell(rowHeader, 0, "STT", styleHeader, sheet);
+        createCell(rowHeader, 1, "URL", styleHeader, sheet);
+        CellStyle styleData = workbook.createCellStyle();
+        XSSFFont fontData = workbook.createFont();
+        fontData.setFontHeight(13);
+        fontData.setFontName("Times New Roman");
+        styleData.setFont(fontData);
+        List<User> userList = userRepository.findByEmailIsNull();
+        int rowCount = 1;
+        if (!CollectionUtils.isEmpty(userList)) {
+            int stt = 1;
+            for (User item : userList) {
+                Row row = sheet.createRow(rowCount++);
+                int columnCount = 0;
+                createCell(row, columnCount++, stt++, styleData, sheet);
+                createCell(row, columnCount++, item.getUrl(), styleData, sheet);
+
+            }
+        }
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        workbook.write(byteArrayOutputStream);
+        return byteArrayOutputStream.toByteArray();
     }
 
 }

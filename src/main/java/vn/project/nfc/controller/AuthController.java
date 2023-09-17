@@ -1,6 +1,9 @@
 package vn.project.nfc.controller;
 
+import com.google.zxing.WriterException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +16,7 @@ import vn.project.nfc.service.ValidateService;
 
 import javax.mail.MessagingException;
 import javax.validation.Valid;
+import java.io.IOException;
 
 @RequiredArgsConstructor
 @RestController
@@ -61,8 +65,28 @@ public class AuthController {
     }
 
     @GetMapping("/generate-uuid")
-    public ResponseEntity<GlobalResponse<Object>> generateUuidAndUrl() {
-        return ResponseEntity.ok(authService.generateUuidAndUrl());
+    public ResponseEntity<GlobalResponse<Object>> generateUuidAndUrl(@RequestParam(name = "number") Integer number) {
+        return ResponseEntity.ok(authService.generateUuidAndUrl(number));
+    }
+
+    @GetMapping("/generate-qr/download-zip")
+    public ResponseEntity<byte[]> generateQRCode() throws IOException, WriterException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("attachment", "QR-the-ca-nhan" + ".zip");
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(authService.generateQRCode());
+    }
+
+    @GetMapping("/export-excel")
+    public ResponseEntity<byte[]> exportExcel() throws IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("attachment", "URL-the-ca-nhan" + ".xlsx");
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(authService.exportExcel());
     }
 
 
