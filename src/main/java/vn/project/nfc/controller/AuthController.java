@@ -65,28 +65,29 @@ public class AuthController {
     }
 
     @GetMapping("/generate-uuid")
-    public ResponseEntity<GlobalResponse<Object>> generateUuidAndUrl(@RequestParam(name = "number") Integer number) {
-        return ResponseEntity.ok(authService.generateUuidAndUrl(number));
+    public ResponseEntity<GlobalResponse<Object>> generateUuidAndUrl(@RequestParam(name = "number") Integer number,
+                                                                     @RequestParam(name = "create_time") Integer createTime) {
+        return ResponseEntity.ok(authService.generateUuidAndUrl(number, createTime));
     }
 
     @GetMapping("/generate-qr/download-zip")
-    public ResponseEntity<byte[]> generateQRCode() throws IOException, WriterException {
+    public ResponseEntity<byte[]> generateQRCode(@RequestParam(name = "create_time") Integer createTime) throws IOException, WriterException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         headers.setContentDispositionFormData("attachment", "QR-the-ca-nhan" + ".zip");
         return ResponseEntity.ok()
                 .headers(headers)
-                .body(authService.generateQRCode());
+                .body(authService.generateQRCode(createTime));
     }
 
     @GetMapping("/export-excel")
-    public ResponseEntity<byte[]> exportExcel() throws IOException {
+    public ResponseEntity<byte[]> exportExcel(@RequestParam(name = "create_time") Integer createTime) throws IOException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         headers.setContentDispositionFormData("attachment", "URL-the-ca-nhan" + ".xlsx");
         return ResponseEntity.ok()
                 .headers(headers)
-                .body(authService.exportExcel());
+                .body(authService.exportExcel(createTime));
     }
 
 

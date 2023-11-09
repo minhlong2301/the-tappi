@@ -16,6 +16,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByNickName(String nickName);
 
-    List<User> findByEmailIsNull();
+    List<User> findByNumberTimeCreate(Integer createTime);
 
 }

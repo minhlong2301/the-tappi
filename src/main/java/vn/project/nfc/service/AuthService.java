@@ -188,15 +188,19 @@ public class AuthService {
                 .build();
     }
 
-    public GlobalResponse<Object> generateUuidAndUrl(Integer number) {
+    @Transactional
+    public GlobalResponse<Object> generateUuidAndUrl(Integer number, Integer createTime) {
         String uuid;
+        List<User> userList = new ArrayList<>();
         for (int i = 0; i < number; i++) {
             User user = new User();
             user.setUuid(UUID.randomUUID().toString());
             uuid = user.getUuid();
             user.setUrl("https://liamtap.site/" + uuid);
-            userRepository.save(user);
+            user.setNumberTimeCreate(createTime);
+            userList.add(user);
         }
+        userRepository.saveAll(userList);
         return GlobalResponse.builder()
                 .status(HttpStatus.OK.value())
                 .message("Thành công")
@@ -204,12 +208,12 @@ public class AuthService {
                 .build();
     }
 
-    public byte[] generateQRCode() throws IOException, WriterException {
+    public byte[] generateQRCode(Integer createTime) throws IOException, WriterException {
         ByteArrayOutputStream zipOutputStream = new ByteArrayOutputStream();
         ZipOutputStream zip = new ZipOutputStream(zipOutputStream);
         int width = 42;
         int height = 42;
-        Map<String, String> userList = this.getDataUrls();
+        Map<String, String> userList = this.getDataUrls(createTime);
         Map<String, String> uuidAndUrl = new HashMap<>();
         for (var url : userList.entrySet()) {
             EnumMap<EncodeHintType, Object> hints = new EnumMap<>(EncodeHintType.class);
@@ -234,9 +238,9 @@ public class AuthService {
         return zipOutputStream.toByteArray();
     }
 
-    private Map<String, String> getDataUrls() {
+    private Map<String, String> getDataUrls(Integer createTime) {
         Map<String, String> uuidList = new HashMap<>();
-        List<User> userList = userRepository.findByEmailIsNull();
+        List<User> userList = userRepository.findByNumberTimeCreate(createTime);
         if (!CollectionUtils.isEmpty(userList)) {
             for (User item : userList) {
                 uuidList.put(item.getUuid(), item.getUrl());
@@ -273,7 +277,7 @@ public class AuthService {
         cell.setCellStyle(style);
     }
 
-    public byte[] exportExcel() throws IOException {
+    public byte[] exportExcel(Integer createTime) throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
         XSSFSheet sheet = workbook.createSheet("URL thẻ cá nhân");
         Row rowHeader = sheet.createRow(0);
@@ -290,7 +294,7 @@ public class AuthService {
         fontData.setFontHeight(13);
         fontData.setFontName("Times New Roman");
         styleData.setFont(fontData);
-        List<User> userList = userRepository.findByEmailIsNull();
+        List<User> userList = userRepository.findByNumberTimeCreate(createTime);
         int rowCount = 1;
         if (!CollectionUtils.isEmpty(userList)) {
             int stt = 1;

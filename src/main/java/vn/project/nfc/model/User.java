@@ -59,4 +59,7 @@ public class User {
     @Column(name = "UPDATE_AT")
     private Date updateAt;
 
+    @Column(name = "NUMBER_TIME_CREATE")
+    private Integer numberTimeCreate;
+
 }
